@@ -12,57 +12,67 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let tree = buildPrefixTree<String>(parseImportsSetting(imports));
 
-	let disposable = vscode.languages.registerCompletionItemProvider('typescript', {
-		provideCompletionItems(document, position) {
-			let range = document.getWordRangeAtPosition(position);
+	['javascript', 'typescript'].forEach(type => {
+		let disposable = vscode.languages.registerCompletionItemProvider(type, {
+			provideCompletionItems(document, position) {
+				let range = document.getWordRangeAtPosition(position);
 
-			let text = document.getText(range).toLowerCase();
+				let text = document.getText(range).toLowerCase();
 
-			let chars = text.split('');
+				let chars = text.split('');
 
-			let suggestions: Array<{ key: string; value: string }> = [];
+				let suggestions: Array<{ key: string; value: string }> = [];
 
-			let treeNode = tree;
+				let treeNode = tree;
 
-			chars.some(c => {
-				treeNode = treeNode.get(c);
-				if (!treeNode) return true;
-			});
-
-			if (treeNode) {
-				addAllSuggestions(treeNode);
-			}
-
-			function addAllSuggestions(map: Map<string | Symbol, any>) {
-				map.forEach((mapOrValue, key) => {
-					if (key === PREFIX_TREE_VALUE) {
-						suggestions.push(mapOrValue);
-					} else {
-						addAllSuggestions(mapOrValue);
-					}
+				chars.some(c => {
+					treeNode = treeNode.get(c);
+					if (!treeNode) return true;
 				});
-			}
 
-			return suggestions.map(({ key, value }) => {
-				let importStr = `import ${key} from '${value}';`;
+				if (treeNode) {
+					addAllSuggestions(treeNode);
+				}
 
-				let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Reference);
-				item.detail = importStr;
-				item.additionalTextEdits = [
-					vscode.TextEdit.insert(new vscode.Position(0, 0), importStr + '\n')
-				];
+				function addAllSuggestions(map: Map<string | Symbol, any>) {
+					map.forEach((mapOrValue, key) => {
+						if (key === PREFIX_TREE_VALUE) {
+							suggestions.push(mapOrValue);
+						} else {
+							addAllSuggestions(mapOrValue);
+						}
+					});
+				}
 
-				return item;
-			});
-		}
+				return suggestions.map(({ key, value }) => {
+					let importStr = `import ${key} from '${value}';`;
+
+					let item = new vscode.CompletionItem(
+						key,
+						vscode.CompletionItemKind.Reference,
+					);
+					item.detail = importStr;
+					item.additionalTextEdits = [
+						vscode.TextEdit.insert(
+							new vscode.Position(0, 0),
+							importStr + '\n',
+						),
+					];
+
+					return item;
+				});
+			},
+		});
+
+		context.subscriptions.push(disposable);
 	});
-
-	context.subscriptions.push(disposable);
 }
 
 export function deactivate() {}
 
-function parseImportsSetting(imports: any): Iterable<{ key: String; value: String }> {
+function parseImportsSetting(
+	imports: any,
+): Iterable<{ key: String; value: String }> {
 	let result: Array<{ key: String; value: String }> = [];
 
 	for (let [key, value] of Object.entries(imports)) {

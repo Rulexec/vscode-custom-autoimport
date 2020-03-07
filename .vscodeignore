@@ -1,4 +1,5 @@
 .gitignore
+.prettierrc.toml
 .vscode
 node_modules
 tsconfig.json

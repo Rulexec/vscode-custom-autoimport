@@ -3,11 +3,11 @@
 	"displayName": "Custom AutoImport",
 	"description": "Provides ability to declare custom names for packages autoimport",
 	"license": "MIT",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "rulexec",
 	"repository": "https://github.com/Rulexec/vscode-custom-autoimport",
 	"engines": {
-		"vscode": "^1.34.0"
+		"vscode": "^1.42.0"
 	},
 	"categories": [
 		"Other"

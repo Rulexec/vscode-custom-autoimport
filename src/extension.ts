@@ -6,11 +6,25 @@ const PREFIX_TREE_VALUE = Symbol('prefixTreeValue');
 // TODO: extract {Types} to named types
 
 export function activate(context: vscode.ExtensionContext) {
-	let imports = vscode.workspace
-		.getConfiguration('customAutoImport')
-		.get<any>('imports', {});
+	let tree: Map<string | Symbol, any>;
 
-	let tree = buildPrefixTree<String>(parseImportsSetting(imports));
+	updateTree();
+
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration(event => {
+			if (event.affectsConfiguration('customAutoImport')) {
+				updateTree();
+			}
+		}),
+	);
+
+	function updateTree() {
+		let imports = vscode.workspace
+			.getConfiguration('customAutoImport')
+			.get<any>('imports', {});
+
+		tree = buildPrefixTree<String>(parseImportsSetting(imports));
+	}
 
 	['javascript', 'typescript'].forEach(type => {
 		let disposable = vscode.languages.registerCompletionItemProvider(type, {

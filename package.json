@@ -1,9 +1,9 @@
 {
 	"name": "custom-autoimport",
-	"displayName": "Custom AutoImport",
+	"displayName": "Custom Auto Import",
 	"description": "Provides ability to declare custom names for packages autoimport",
 	"license": "MIT",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "rulexec",
 	"repository": "https://github.com/Rulexec/vscode-custom-autoimport",
 	"engines": {
@@ -16,6 +16,28 @@
 		"onLanguage:javascript",
 		"onLanguage:typescript"
 	],
+	"contributes": {
+		"configuration": {
+			"title": "CustomAutoImport",
+			"properties": {
+				"customAutoImport": {
+					"type": "object",
+					"properties": {
+						"imports": {
+							"type": "object",
+							"description": "Mapping of variable name to module name",
+							"patternProperties": {
+								"^.*$": {
+									"type": "string",
+									"minLength": 1
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
 	"main": "./out/extension.js",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

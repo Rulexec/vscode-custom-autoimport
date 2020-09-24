@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { parseImports } from './util/parse-imports';
 
 // TODO: extract prefix tree to separate class
 const PREFIX_TREE_VALUE = Symbol('prefixTreeValue');
@@ -48,12 +49,27 @@ export function activate(context: vscode.ExtensionContext) {
 
 				chars.some((c) => {
 					treeNode = treeNode.get(c);
-					if (!treeNode) return true;
+					if (!treeNode) {
+						return true;
+					}
 				});
 
 				if (treeNode) {
 					addAllSuggestions(treeNode);
 				}
+
+				let parsedImports = parseImports({
+					getText(a, b) {
+						let text = document.getText(
+							new vscode.Range(
+								new vscode.Position(a[0], a[1]),
+								new vscode.Position(b[0], b[1]),
+							),
+						);
+
+						return text;
+					},
+				});
 
 				function addAllSuggestions(map: Map<string | Symbol, any>) {
 					map.forEach((mapOrValue, key) => {
@@ -65,7 +81,19 @@ export function activate(context: vscode.ExtensionContext) {
 					});
 				}
 
-				return suggestions.map(({ key, value }) => {
+				let result: Array<vscode.CompletionItem> = [];
+
+				suggestions.forEach(({ key, value }) => {
+					let importsList = parsedImports.get(value);
+
+					let alreadyHas = importsList && importsList.some((importEntry) => {
+						return importEntry.name === key;
+					});
+
+					if (alreadyHas) {
+						return;
+					}
+
 					let importStr = `import ${key} from '${value}';`;
 
 					let item = new vscode.CompletionItem(
@@ -80,8 +108,10 @@ export function activate(context: vscode.ExtensionContext) {
 						),
 					];
 
-					return item;
+					result.push(item);
 				});
+
+				return result;
 			},
 		});
 
@@ -97,7 +127,9 @@ function parseImportsSetting(
 	let result: Array<{ key: String; value: String }> = [];
 
 	for (let [key, value] of Object.entries(imports)) {
-		if (typeof value !== 'string') continue;
+		if (typeof value !== 'string') {
+			continue;
+		}
 
 		result.push({ key, value });
 	}

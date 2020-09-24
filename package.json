@@ -14,7 +14,9 @@
 	],
 	"activationEvents": [
 		"onLanguage:javascript",
-		"onLanguage:typescript"
+		"onLanguage:javascriptreact",
+		"onLanguage:typescript",
+		"onLanguage:typescriptreact"
 	],
 	"contributes": {
 		"configuration": {

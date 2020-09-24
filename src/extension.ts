@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
 	updateTree();
 
 	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration(event => {
+		vscode.workspace.onDidChangeConfiguration((event) => {
 			if (event.affectsConfiguration('customAutoImport')) {
 				updateTree();
 			}
@@ -26,7 +26,14 @@ export function activate(context: vscode.ExtensionContext) {
 		tree = buildPrefixTree<String>(parseImportsSetting(imports));
 	}
 
-	['javascript', 'typescript'].forEach(type => {
+	let supportedLanguages = [
+		'javascript',
+		'javascriptreact',
+		'typescript',
+		'typescriptreact',
+	];
+
+	supportedLanguages.forEach((type) => {
 		let disposable = vscode.languages.registerCompletionItemProvider(type, {
 			provideCompletionItems(document, position) {
 				let range = document.getWordRangeAtPosition(position);
@@ -39,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				let treeNode = tree;
 
-				chars.some(c => {
+				chars.some((c) => {
 					treeNode = treeNode.get(c);
 					if (!treeNode) return true;
 				});

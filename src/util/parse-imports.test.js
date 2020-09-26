@@ -210,7 +210,7 @@ describe('parseImports', () => {
 	});
 });
 
-function parseTestHelper(str: string, expected: any) {
+function parseTestHelper(str, expected) {
 	let imports = parseImports({
 		getText() {
 			return str;
@@ -219,17 +219,15 @@ function parseTestHelper(str: string, expected: any) {
 
 	imports.forEach((importEntries) => {
 		importEntries.forEach((entry) => {
-			// @ts-ignore
 			entry.multipleImports = mapToObject(entry.multipleImports);
 		});
 	});
-	// @ts-ignore
+
 	imports = mapToObject(imports);
 
 	assert.deepStrictEqual(imports, expected);
 }
 
-// @ts-ignore
 function mapToObject(map) {
 	if (!map) {
 		return null;
@@ -237,9 +235,7 @@ function mapToObject(map) {
 
 	let obj = {};
 
-	// @ts-ignore
 	map.forEach((value, key) => {
-		// @ts-ignore
 		obj[key] = value;
 	});
 

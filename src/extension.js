@@ -1,13 +1,11 @@
-import * as vscode from 'vscode';
-import { parseImports } from './util/parse-imports';
+import vscode from './vscode.js';
+import { parseImports } from './util/parse-imports.js';
 
 // TODO: extract prefix tree to separate class
 const PREFIX_TREE_VALUE = Symbol('prefixTreeValue');
 
-// TODO: extract {Types} to named types
-
-export function activate(context: vscode.ExtensionContext) {
-	let tree: Map<string | Symbol, any>;
+exports.activate = function activate(context) {
+	let tree;
 
 	updateTree();
 
@@ -22,9 +20,9 @@ export function activate(context: vscode.ExtensionContext) {
 	function updateTree() {
 		let imports = vscode.workspace
 			.getConfiguration('customAutoImport')
-			.get<any>('imports', {});
+			.get('imports', {});
 
-		tree = buildPrefixTree<String>(parseImportsSetting(imports));
+		tree = buildPrefixTree(parseImportsSetting(imports));
 	}
 
 	let supportedLanguages = [
@@ -43,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				let chars = text.split('');
 
-				let suggestions: Array<{ key: string; value: string }> = [];
+				let suggestions = [];
 
 				let treeNode = tree;
 
@@ -71,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
 					},
 				});
 
-				function addAllSuggestions(map: Map<string | Symbol, any>) {
+				function addAllSuggestions(map) {
 					map.forEach((mapOrValue, key) => {
 						if (key === PREFIX_TREE_VALUE) {
 							suggestions.push(mapOrValue);
@@ -81,14 +79,16 @@ export function activate(context: vscode.ExtensionContext) {
 					});
 				}
 
-				let result: Array<vscode.CompletionItem> = [];
+				let result = [];
 
 				suggestions.forEach(({ key, value }) => {
 					let importsList = parsedImports.get(value);
 
-					let alreadyHas = importsList && importsList.some((importEntry) => {
-						return importEntry.name === key;
-					});
+					let alreadyHas =
+						importsList &&
+						importsList.some((importEntry) => {
+							return importEntry.name === key;
+						});
 
 					if (alreadyHas) {
 						return;
@@ -117,14 +117,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 		context.subscriptions.push(disposable);
 	});
-}
+};
 
-export function deactivate() {}
+exports.deactivate = function deactivate() {};
 
-function parseImportsSetting(
-	imports: any,
-): Iterable<{ key: String; value: String }> {
-	let result: Array<{ key: String; value: String }> = [];
+function parseImportsSetting(imports) {
+	let result = [];
 
 	for (let [key, value] of Object.entries(imports)) {
 		if (typeof value !== 'string') {
@@ -137,7 +135,7 @@ function parseImportsSetting(
 	return result;
 }
 
-function buildPrefixTree<T>(items: Iterable<{ key: String; value: T }>) {
+function buildPrefixTree(items) {
 	let result = new Map();
 
 	for (let { key, value } of items) {

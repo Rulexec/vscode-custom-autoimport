@@ -1,40 +1,14 @@
-import { start } from 'repl';
-
 export { parseImports };
 
-type ModuleName = string;
-type ModulePath = string;
-type Position = [number, number];
-
-interface TextDocument {
-	getText: (start: Position, end: Position) => string;
-}
-
-type MultipleImportAlias = {
-	name: ModuleName;
-	alias: string | null;
-	withComma: boolean;
-
-	end: Position;
-};
-type Import = {
-	name: ModuleName | null;
-	alias: string | null;
-	multipleImports: Map<ModuleName, MultipleImportAlias> | null;
-	fromModule: ModulePath;
-
-	end: Position;
-};
-
 // TODO: implement more than 16 lines
-function parseImports(document: TextDocument): Map<ModulePath, [Import]> {
+function parseImports(document) {
 	let text = document.getText([0, 0], [16, 0]);
 
 	let map = new Map();
 
 	let regexp = /((import\s+)([^]+?)(\s+from\s+['])([^']+)([']\s*;?))\s*/g;
 
-	let match: any;
+	let match;
 	while (true) {
 		match = regexp.exec(text);
 		if (!match) {
@@ -57,7 +31,7 @@ function parseImports(document: TextDocument): Map<ModulePath, [Import]> {
 			_end.length -
 			lastLinePos;
 
-		let finalName: string | null = name;
+		let finalName = name;
 		let alias = null;
 		let finalMultipleImports = null;
 
@@ -71,7 +45,7 @@ function parseImports(document: TextDocument): Map<ModulePath, [Import]> {
 				lineBeforeMultipleImportPos,
 			] = countNewLines(text.slice(0, _start.length));
 
-			multipleImports.forEach(({ name, alias, end, withComma }: any) => {
+			multipleImports.forEach(({ name, alias, end, withComma }) => {
 				map.set(name, {
 					name,
 					alias,
@@ -121,7 +95,7 @@ function parseImports(document: TextDocument): Map<ModulePath, [Import]> {
 	return map;
 }
 
-function parseMultipleImports(str: string): any {
+function parseMultipleImports(str) {
 	if (!/^{.+}$/s.test(str)) {
 		return null;
 	}
@@ -162,7 +136,7 @@ function parseMultipleImports(str: string): any {
 	return result;
 }
 
-function countNewLines(str: string): [number, number] {
+function countNewLines(str) {
 	let count = 0;
 	let pos;
 	let lastPos = 0;

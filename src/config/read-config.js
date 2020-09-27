@@ -35,7 +35,7 @@ function readConfig(config) {
 	}
 
 	if (modules) {
-		modules.forEach(mod => {
+		modules.forEach((mod) => {
 			if (!mod) {
 				return;
 			}
@@ -57,7 +57,7 @@ function readConfig(config) {
 			}
 
 			if (Array.isArray(exports)) {
-				exports.forEach(exportDef => {
+				exports.forEach((exportDef) => {
 					if (!exportDef) {
 						return;
 					}
@@ -73,7 +73,9 @@ function readConfig(config) {
 						});
 					} else {
 						let { name: exportName, alias } = exportDef;
-						let isValid = isNonEmptyString(exportName) && isNonEmptyString(alias);
+						let isValid =
+							isNonEmptyString(exportName) &&
+							isNonEmptyString(alias);
 
 						if (isValid) {
 							result.push({

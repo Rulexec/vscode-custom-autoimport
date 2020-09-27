@@ -3,7 +3,7 @@ export { SearchTree };
 function SearchTree() {
 	let tree = new Map();
 
-	this.add = function(key, data) {
+	this.add = function (key, data) {
 		key = key.toLowerCase();
 
 		for (let two of getFirstTwoCharacters(key)) {
@@ -24,7 +24,7 @@ function SearchTree() {
 		}
 	};
 
-	this.find = function(text) {
+	this.find = function (text) {
 		text = text.toLowerCase();
 
 		let suggestions = new Map();
@@ -61,10 +61,10 @@ function SearchTree() {
 		let list = Array.from(suggestions.values());
 		list.sort((a, b) => b.occurences - a.occurences);
 
-		return list.map(x => x.data);
+		return list.map((x) => x.data);
 	};
 
-	this.reset = function() {
+	this.reset = function () {
 		tree = new Map();
 	};
 }
@@ -79,7 +79,7 @@ function* getFirstTwoCharacters(text) {
 	}
 }
 
-export { getTrigrams as _getTrigrams }
+export { getTrigrams as _getTrigrams };
 function* getTrigrams(text) {
 	let length = text.length;
 	if (length <= 3) {

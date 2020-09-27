@@ -1,14 +1,18 @@
-const path = require('path');
+const _path = require('path');
+const packageJson = require('./package.json')
 
 let config = {
 	mode: 'production',
 	target: 'node',
 	entry: {
-		extension: path.resolve(__dirname, 'src/extension.js'),
+		extension: _path.resolve(__dirname, 'src/extension.js'),
 	},
 	output: {
 		filename: '[name].js',
-		path: path.resolve(__dirname, 'out'),
+		path: _path.resolve(__dirname, 'out'),
+	},
+	resolve: {
+		alias: packageJson._moduleAliases || {},
 	},
 	module: {
 		noParse: /\/vscode.js$/,

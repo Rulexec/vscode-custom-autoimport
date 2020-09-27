@@ -4,7 +4,16 @@ function SearchTree() {
 	let tree = new Map();
 
 	this.add = function(key, data) {
+		key = key.toLowerCase();
+
+		for (let two of getFirstTwoCharacters(key)) {
+			addSuggestion(two, data);
+		}
 		for (let tri of getTrigrams(key)) {
+			addSuggestion(tri, data);
+		}
+
+		function addSuggestion(tri, data) {
 			let arr = tree.get(tri);
 			if (!arr) {
 				arr = [];
@@ -16,18 +25,29 @@ function SearchTree() {
 	};
 
 	this.find = function(text) {
+		text = text.toLowerCase();
+
 		let suggestions = new Map();
 
+		for (let two of getFirstTwoCharacters(text)) {
+			addVariants(two);
+		}
 		for (let tri of getTrigrams(text)) {
+			addVariants(tri);
+		}
+
+		function addVariants(tri) {
 			let arr = tree.get(tri);
 			if (!arr) {
-				continue;
+				return;
 			}
 
 			arr.forEach(({ key, data }) => {
 				let variant = suggestions.get(key);
 				if (!variant) {
 					variant = {
+						key,
+						tri,
 						data,
 						occurences: 0,
 					};
@@ -47,6 +67,16 @@ function SearchTree() {
 	this.reset = function() {
 		tree = new Map();
 	};
+}
+
+function* getFirstTwoCharacters(text) {
+	if (text.length >= 1) {
+		yield text[0];
+
+		if (text.length >= 2) {
+			yield text.slice(0, 2);
+		}
+	}
 }
 
 export { getTrigrams as _getTrigrams }

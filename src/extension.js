@@ -1,11 +1,10 @@
 import vscode from './vscode.js';
 import { parseImports } from './util/parse-imports.js';
-
-// TODO: extract prefix tree to separate class
-const PREFIX_TREE_VALUE = Symbol('prefixTreeValue');
+import { SearchTree } from './search/search-tree.js';
+import { readConfig } from './config/read-config.js';
 
 exports.activate = function activate(context) {
-	let tree;
+	let searchTree = new SearchTree();
 
 	updateTree();
 
@@ -18,11 +17,15 @@ exports.activate = function activate(context) {
 	);
 
 	function updateTree() {
-		let imports = vscode.workspace
-			.getConfiguration('customAutoImport')
-			.get('imports', {});
+		let config = vscode.workspace.getConfiguration('customAutoImport');
 
-		tree = buildPrefixTree(parseImportsSetting(imports));
+		searchTree.reset();
+
+		let suggestions = readConfig(config);
+
+		suggestions.forEach((x) => {
+			searchTree.add(x.suggestion, x);
+		});
 	}
 
 	let supportedLanguages = [
@@ -37,24 +40,9 @@ exports.activate = function activate(context) {
 			provideCompletionItems(document, position) {
 				let range = document.getWordRangeAtPosition(position);
 
-				let text = document.getText(range).toLowerCase();
+				let text = document.getText(range);
 
-				let chars = text.split('');
-
-				let suggestions = [];
-
-				let treeNode = tree;
-
-				chars.some((c) => {
-					treeNode = treeNode.get(c);
-					if (!treeNode) {
-						return true;
-					}
-				});
-
-				if (treeNode) {
-					addAllSuggestions(treeNode);
-				}
+				let suggestions = searchTree.find(text);
 
 				let parsedImports = parseImports({
 					getText(a, b) {
@@ -69,42 +57,41 @@ exports.activate = function activate(context) {
 					},
 				});
 
-				function addAllSuggestions(map) {
-					map.forEach((mapOrValue, key) => {
-						if (key === PREFIX_TREE_VALUE) {
-							suggestions.push(mapOrValue);
-						} else {
-							addAllSuggestions(mapOrValue);
-						}
-					});
-				}
-
 				let result = [];
 
-				suggestions.forEach(({ key, value }) => {
-					let importsList = parsedImports.get(value);
+				suggestions.forEach((suggestion) => {
+					let {
+						description,
+						defaultExportName,
+						modulePath,
+					} = suggestion;
+
+					if (!defaultExportName) {
+						// TODO: not yet supported
+						return;
+					}
+
+					let importsList = parsedImports.get(modulePath);
 
 					let alreadyHas =
 						importsList &&
 						importsList.some((importEntry) => {
-							return importEntry.name === key;
+							return importEntry.name === defaultExportName;
 						});
 
 					if (alreadyHas) {
 						return;
 					}
 
-					let importStr = `import ${key} from '${value}';`;
-
 					let item = new vscode.CompletionItem(
-						key,
+						defaultExportName,
 						vscode.CompletionItemKind.Reference,
 					);
-					item.detail = importStr;
+					item.detail = description;
 					item.additionalTextEdits = [
 						vscode.TextEdit.insert(
 							new vscode.Position(0, 0),
-							importStr + '\n',
+							description + ';\n',
 						),
 					];
 
@@ -120,39 +107,3 @@ exports.activate = function activate(context) {
 };
 
 exports.deactivate = function deactivate() {};
-
-function parseImportsSetting(imports) {
-	let result = [];
-
-	for (let [key, value] of Object.entries(imports)) {
-		if (typeof value !== 'string') {
-			continue;
-		}
-
-		result.push({ key, value });
-	}
-
-	return result;
-}
-
-function buildPrefixTree(items) {
-	let result = new Map();
-
-	for (let { key, value } of items) {
-		let lowerKey = key.toLowerCase();
-
-		let map = lowerKey.split('').reduce((map, c) => {
-			let newMap = map.get(c);
-			if (!newMap) {
-				newMap = new Map();
-				map.set(c, newMap);
-			}
-
-			return newMap;
-		}, result);
-
-		map.set(PREFIX_TREE_VALUE, { key, value });
-	}
-
-	return result;
-}

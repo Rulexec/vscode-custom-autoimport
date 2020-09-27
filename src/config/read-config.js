@@ -17,85 +17,40 @@ export { readConfig };
 		}]
 */
 function readConfig(config) {
-	let { imports, modules } = config;
+	let { imports } = config;
 
 	let result = [];
 
-	if (imports) {
-		for (let [defaultExportName, modulePath] of Object.entries(imports)) {
-			result.push({
-				suggestion: defaultExportName,
-				description: `import ${defaultExportName} from '${modulePath}'`,
-				defaultExportName,
-				exportName: null,
-				alias: null,
-				modulePath,
-			});
-		}
+	if (!imports) {
+		return result;
 	}
 
-	if (modules) {
-		modules.forEach((mod) => {
-			if (!mod) {
-				return;
-			}
+	for (let [key, modulePath] of Object.entries(imports)) {
+		let suggestion = key;
+		let importPart = key;
+		let defaultExportName = key;
+		let exportName = null;
+		let alias = null;
 
-			let { name, defaultExport, exports } = mod;
-			if (!isNonEmptyString(name)) {
-				return;
-			}
+		let match = /^\s*{\s*([^\s]+)(?:\s+as\s+([^\s]+))?\s*}\s*$/.exec(key);
+		if (match) {
+			let [, _exportName, _alias] = match;
+			suggestion = _alias || _exportName;
+			importPart = `{ ${_exportName}${_alias ? ` as ${_alias}` : ''} }`;
+			defaultExportName = null;
+			exportName = _exportName;
+			alias = _alias || null;
+		}
 
-			if (isNonEmptyString(defaultExport)) {
-				result.push({
-					suggestion: defaultExport,
-					description: `import ${defaultExport} from '${name}'`,
-					defaultExportName: defaultExport,
-					exportName: null,
-					alias: null,
-					modulePath: name,
-				});
-			}
-
-			if (Array.isArray(exports)) {
-				exports.forEach((exportDef) => {
-					if (!exportDef) {
-						return;
-					}
-
-					if (isNonEmptyString(exportDef)) {
-						result.push({
-							suggestion: exportDef,
-							description: `import { ${exportDef} } from '${name}'`,
-							defaultExportName: null,
-							exportName: exportDef,
-							alias: null,
-							modulePath: name,
-						});
-					} else {
-						let { name: exportName, alias } = exportDef;
-						let isValid =
-							isNonEmptyString(exportName) &&
-							isNonEmptyString(alias);
-
-						if (isValid) {
-							result.push({
-								suggestion: alias,
-								description: `import { ${exportName} as ${alias} } from '${name}'`,
-								defaultExportName: null,
-								exportName: exportName,
-								alias,
-								modulePath: name,
-							});
-						}
-					}
-				});
-			}
+		result.push({
+			suggestion,
+			description: `import ${importPart} from '${modulePath}'`,
+			defaultExportName,
+			exportName,
+			alias,
+			modulePath,
 		});
 	}
 
 	return result;
-}
-
-function isNonEmptyString(str) {
-	return str && typeof str === 'string';
 }

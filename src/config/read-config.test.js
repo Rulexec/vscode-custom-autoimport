@@ -6,7 +6,7 @@ chai.use(deepEqualInAnyOrder);
 const { expect } = chai;
 
 describe('readConfig', () => {
-	it('should parse old format default imports', () => {
+	it('should parse default imports', () => {
 		let config = {
 			imports: {
 				defaultExportName: 'modulePath',
@@ -36,55 +36,41 @@ describe('readConfig', () => {
 		]);
 	});
 
-	it('should parse new format with modules definitions', () => {
+	it('should parse non-default imports', () => {
 		let config = {
-			modules: [
-				{
-					name: 'test-module',
-					defaultExport: 'testMod',
-					exports: ['testFun', { name: 'testFun2', alias: 'asFun2' }],
-				},
-				{
-					name: 'test-module2',
-					defaultExport: 'testMod2',
-				},
-			],
+			imports: {
+				'_': 'lodash',
+				'{ flatMap }': 'lodash',
+				'{ filter as _filter }': 'lodash',
+			},
 		};
 
 		let parsed = readConfig(config);
 
 		expect(parsed).to.deep.equalInAnyOrder([
 			{
-				suggestion: 'testMod',
-				description: `import testMod from 'test-module'`,
-				defaultExportName: 'testMod',
+				suggestion: '_',
+				description: `import _ from 'lodash'`,
+				defaultExportName: '_',
 				exportName: null,
 				alias: null,
-				modulePath: 'test-module',
+				modulePath: 'lodash',
 			},
 			{
-				suggestion: 'testFun',
-				description: `import { testFun } from 'test-module'`,
+				suggestion: 'flatMap',
+				description: `import { flatMap } from 'lodash'`,
 				defaultExportName: null,
-				exportName: 'testFun',
+				exportName: 'flatMap',
 				alias: null,
-				modulePath: 'test-module',
+				modulePath: 'lodash',
 			},
 			{
-				suggestion: 'asFun2',
-				description: `import { testFun2 as asFun2 } from 'test-module'`,
+				suggestion: '_filter',
+				description: `import { filter as _filter } from 'lodash'`,
 				defaultExportName: null,
-				exportName: 'testFun2',
-				alias: 'asFun2',
-				modulePath: 'test-module',
-			},
-			{
-				suggestion: 'testMod2',
-				description: `import testMod2 from 'test-module2'`,
-				defaultExportName: 'testMod2',
-				exportName: null,
-				alias: null,
-				modulePath: 'test-module2',
+				exportName: 'filter',
+				alias: '_filter',
+				modulePath: 'lodash',
 			},
 		]);
 	});

@@ -3,7 +3,7 @@
 	"displayName": "Custom Auto Import",
 	"description": "Provides ability to declare custom names for packages autoimport",
 	"license": "MIT",
-	"version": "0.0.3",
+	"version": "0.1.0",
 	"publisher": "rulexec",
 	"repository": "https://github.com/Rulexec/vscode-custom-autoimport",
 	"engines": {
@@ -29,7 +29,7 @@
 							"type": "object",
 							"description": "Mapping of variable name to module name",
 							"patternProperties": {
-								"^.*$": {
+								"^.+$": {
 									"type": "string",
 									"minLength": 1
 								}

@@ -74,4 +74,33 @@ describe('readConfig', () => {
 			},
 		]);
 	});
+
+	it('should parse multiple non-default imports', () => {
+		let config = {
+			imports: {
+				'{ flatMap, filter as _filter }': 'lodash',
+			},
+		};
+
+		let parsed = readConfig(config);
+
+		expect(parsed).to.deep.equalInAnyOrder([
+			{
+				suggestion: 'flatMap',
+				description: `import { flatMap } from 'lodash'`,
+				defaultExportName: null,
+				exportName: 'flatMap',
+				alias: null,
+				modulePath: 'lodash',
+			},
+			{
+				suggestion: '_filter',
+				description: `import { filter as _filter } from 'lodash'`,
+				defaultExportName: null,
+				exportName: 'filter',
+				alias: '_filter',
+				modulePath: 'lodash',
+			},
+		]);
+	});
 });

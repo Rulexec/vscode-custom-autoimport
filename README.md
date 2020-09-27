@@ -9,6 +9,7 @@ Settings example:
 			"_": "lodash",
 			"{ flatMap }": "lodash",
 			"{ filter as _filter }": "lodash",
+			"{ useMemo, useCallback, useEffect }": "react",
 			"MySomething": "@myprefix/mylib/something"
 		}
 	}

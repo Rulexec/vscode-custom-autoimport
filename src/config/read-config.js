@@ -26,30 +26,42 @@ function readConfig(config) {
 	}
 
 	for (let [key, modulePath] of Object.entries(imports)) {
-		let suggestion = key;
-		let importPart = key;
-		let defaultExportName = key;
-		let exportName = null;
-		let alias = null;
-
-		let match = /^\s*{\s*([^\s]+)(?:\s+as\s+([^\s]+))?\s*}\s*$/.exec(key);
+		let match = /^\s*{\s*([^}]+)\s*}\s*$/.exec(key);
 		if (match) {
-			let [, _exportName, _alias] = match;
-			suggestion = _alias || _exportName;
-			importPart = `{ ${_exportName}${_alias ? ` as ${_alias}` : ''} }`;
-			defaultExportName = null;
-			exportName = _exportName;
-			alias = _alias || null;
-		}
+			let text = match[1];
+			let regexp = /([^\s,]+)(?:\s+as\s+([^\s,]+))?,?\s*/g;
 
-		result.push({
-			suggestion,
-			description: `import ${importPart} from '${modulePath}'`,
-			defaultExportName,
-			exportName,
-			alias,
-			modulePath,
-		});
+			while (true) {
+				let match = regexp.exec(text);
+				if (!match) {
+					break;
+				}
+
+				let [, exportName, alias] = match;
+				let suggestion = alias || exportName;
+				let importPart = `{ ${exportName}${
+					alias ? ` as ${alias}` : ''
+				} }`;
+
+				result.push({
+					suggestion,
+					description: `import ${importPart} from '${modulePath}'`,
+					defaultExportName: null,
+					exportName,
+					alias: alias || null,
+					modulePath,
+				});
+			}
+		} else {
+			result.push({
+				suggestion: key,
+				description: `import ${key} from '${modulePath}'`,
+				defaultExportName: key,
+				exportName: null,
+				alias: null,
+				modulePath,
+			});
+		}
 	}
 
 	return result;

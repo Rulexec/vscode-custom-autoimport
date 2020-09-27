@@ -1,3 +1,10 @@
+# vscode-custom-autoimport
+
+# 0.1.1
+
+-   Support for `"{ nameA, nameB }": "module-name"` in the config (multiple imports)
+-   Fixed imports parsing (there was problem with non-default imports on second line+)
+
 # 0.1.0
 
 -   Support for `import { exportName, exportName as _alias } from 'module-name'`.

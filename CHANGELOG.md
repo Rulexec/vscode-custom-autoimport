@@ -1,5 +1,10 @@
 # vscode-custom-autoimport
 
+# 0.1.2
+
+-   Fix non-default import addition (was no comma), now new imports are added
+    to the end of `{ imports, list }`
+
 # 0.1.1
 
 -   Support for `"{ nameA, nameB }": "module-name"` in the config (multiple imports)

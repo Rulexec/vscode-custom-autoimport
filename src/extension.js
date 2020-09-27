@@ -83,18 +83,37 @@ exports.activate = function activate(context) {
 
 							if (exportName) {
 								if (importEntry.multipleImports) {
-									let firstMultipleImport;
-									for (firstMultipleImport of importEntry.multipleImports.values()) {
-										break;
+									let lastImport;
+									for (let importDef of importEntry.multipleImports.values()) {
+										if (!lastImport) {
+											lastImport = importDef;
+											continue;
+										}
+
+										let lineDiff =
+											importDef.end[0] -
+											lastImport.end[0];
+										let posDiff =
+											importDef.end[1] -
+											lastImport.end[1];
+
+										let isGreater =
+											lineDiff > 0 ||
+											(lineDiff === 0 && posDiff > 0);
+
+										if (isGreater) {
+											lastImport = importDef;
+										}
 									}
 
-									if (firstMultipleImport) {
-										multipleInsertPosition =
-											firstMultipleImport.end;
+									if (lastImport) {
+										multipleInsertPosition = lastImport.end;
 										multipleInsertText = '';
 
-										if (!firstMultipleImport.withComma) {
+										if (!lastImport.withComma) {
 											multipleInsertText += ', ';
+										} else {
+											multipleInsertText += ' ';
 										}
 
 										multipleInsertText += exportName;

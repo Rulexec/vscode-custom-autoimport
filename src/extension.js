@@ -59,6 +59,7 @@ exports.activate = function activate(context) {
 
 				let result = [];
 
+				// TODO: extract
 				suggestions.forEach((suggestion) => {
 					let {
 						description,
@@ -70,6 +71,9 @@ exports.activate = function activate(context) {
 
 					let importsList = parsedImports.get(modulePath);
 
+					let multipleInsertPosition;
+					let multipleInsertText;
+
 					let alreadyHas =
 						importsList &&
 						importsList.some((importEntry) => {
@@ -77,12 +81,35 @@ exports.activate = function activate(context) {
 								return false;
 							}
 
-							return (
-								(defaultExportName &&
-									importEntry.name === defaultExportName) ||
-								(importEntry.multipleImports &&
-									importEntry.multipleImports.has(exportName))
-							);
+							if (exportName) {
+								if (importEntry.multipleImports) {
+									let firstMultipleImport;
+									for (firstMultipleImport of importEntry.multipleImports.values()) {
+										break;
+									}
+
+									if (firstMultipleImport) {
+										multipleInsertPosition =
+											firstMultipleImport.end;
+										multipleInsertText = '';
+
+										if (!firstMultipleImport.withComma) {
+											multipleInsertText += ', ';
+										}
+
+										multipleInsertText += exportName;
+										if (alias) {
+											multipleInsertText += ` as ${alias}`;
+										}
+									}
+
+									return importEntry.multipleImports.has(
+										exportName,
+									);
+								}
+							}
+
+							return importEntry.name === defaultExportName;
 						});
 
 					if (alreadyHas) {
@@ -96,8 +123,13 @@ exports.activate = function activate(context) {
 					item.detail = description;
 					item.additionalTextEdits = [
 						vscode.TextEdit.insert(
-							new vscode.Position(0, 0),
-							description + ';\n',
+							multipleInsertPosition
+								? new vscode.Position(
+										multipleInsertPosition[0],
+										multipleInsertPosition[1],
+								  )
+								: new vscode.Position(0, 0),
+							multipleInsertText || description + ';\n',
 						),
 					];
 

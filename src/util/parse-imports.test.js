@@ -208,6 +208,55 @@ describe('parseImports', () => {
 			},
 		);
 	});
+
+	it('should parse non-default import on second line', () => {
+		parseTestHelper(
+			`import nameA from 'moduleA';\nimport { nameB } from 'moduleB';\nimport { nameC } from 'moduleC';`,
+			{
+				moduleA: [
+					{
+						name: 'nameA',
+						alias: null,
+						multipleImports: null,
+						fromModule: 'moduleA',
+						end: [0, 28],
+					},
+				],
+				moduleB: [
+					{
+						name: null,
+						alias: null,
+						multipleImports: {
+							nameB: {
+								name: 'nameB',
+								alias: null,
+								end: [1, 14],
+								withComma: false,
+							},
+						},
+						fromModule: 'moduleB',
+						end: [1, 32],
+					},
+				],
+				moduleC: [
+					{
+						name: null,
+						alias: null,
+						multipleImports: {
+							nameC: {
+								name: 'nameC',
+								alias: null,
+								end: [2, 14],
+								withComma: false,
+							},
+						},
+						fromModule: 'moduleC',
+						end: [2, 32],
+					},
+				],
+			},
+		);
+	});
 });
 
 function parseTestHelper(str, expected) {

@@ -1,7 +1,8 @@
 .gitignore
+.eslintrc.js
 .prettierrc.toml
 .vscode
 node_modules
-tsconfig.json
-tslint.json
 package-lock.json
+TODO.md
+webpack.config.js

@@ -18,6 +18,7 @@ function parseImports(document) {
 		let [, _fullNoWs, _start, name, _from, fromModule, _end] = match;
 
 		// TODO: cache counts
+		let [lineBefore] = countNewLines(text.slice(0, match.index));
 		let [line, lastLinePos] = countNewLines(
 			text.slice(0, match.index + _fullNoWs.length),
 		);
@@ -50,7 +51,7 @@ function parseImports(document) {
 					name,
 					alias,
 					end: [
-						lineBeforeMultipleImport + end[0],
+						lineBefore + lineBeforeMultipleImport + end[0],
 						end[0] > 0
 							? end[1]
 							: _start.length -

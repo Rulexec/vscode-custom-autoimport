@@ -63,20 +63,26 @@ exports.activate = function activate(context) {
 					let {
 						description,
 						defaultExportName,
+						exportName,
+						alias,
 						modulePath,
 					} = suggestion;
-
-					if (!defaultExportName) {
-						// TODO: not yet supported
-						return;
-					}
 
 					let importsList = parsedImports.get(modulePath);
 
 					let alreadyHas =
 						importsList &&
 						importsList.some((importEntry) => {
-							return importEntry.name === defaultExportName;
+							if (importEntry.fromModule !== modulePath) {
+								return false;
+							}
+
+							return (
+								(defaultExportName &&
+									importEntry.name === defaultExportName) ||
+								(importEntry.multipleImports &&
+									importEntry.multipleImports.has(exportName))
+							);
 						});
 
 					if (alreadyHas) {
@@ -84,7 +90,7 @@ exports.activate = function activate(context) {
 					}
 
 					let item = new vscode.CompletionItem(
-						defaultExportName,
+						alias || exportName || defaultExportName,
 						vscode.CompletionItemKind.Reference,
 					);
 					item.detail = description;
